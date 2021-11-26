@@ -20,7 +20,6 @@ const router = new VueRouter({
         {
           path: "/",
           name: "Root",
-          header: importComponent("Navbar"),
           component: importComponent("HelloWorld"),
         },
       ],
