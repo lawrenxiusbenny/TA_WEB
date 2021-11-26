@@ -1,3 +1,3 @@
 <template>
-    <h3>Navbar</h3>
+    <h3>footer</h3>
 </template>
