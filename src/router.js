@@ -14,6 +14,7 @@ const router = new VueRouter({
     {
       path: "/",
       name: "dashboard",
+      header: importComponent("Navbar"),
       component: importComponent("HelloWorld"),
       children: [
         //Dashboard

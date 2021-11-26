@@ -12,7 +12,7 @@
       <!-- Right aligned nav items -->
       <b-navbar-nav class="ml-auto">
         <b-nav-item>
-          <b-form-input size="sm" class="mr-sm-2" placeholder="Search"></b-form-input>
+          <b-form-input size="sm" class="mr-sm-2 search-input" placeholder="type something here..."></b-form-input>
         </b-nav-item>
         <b-nav-item>
           <b-button size="sm" class="my-2 my-sm-0 secondary" type="submit">Search</b-button>
@@ -54,4 +54,5 @@
 .dd{
     margin-right: 20px;
 }
+
 </style>
