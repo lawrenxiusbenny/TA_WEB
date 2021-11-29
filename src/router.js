@@ -15,20 +15,18 @@ const router = new VueRouter({
       path: "/",
       name: "dashboard",
       component: importComponent("HelloWorld"),
-      children: [
-        //Login
-        {
-          path: "/login",
-          name: "Login",
-          component: importComponent("Login"),
-        },
-        //Register
-        {
-          path: "/register",
-          name: "Register",
-          component: importComponent("Register"),
-        },
-      ],
+    },
+    //Login
+    {
+      path: "/login",
+      name: "Login",
+      component: importComponent("Login"),
+    },
+    //Register
+    {
+      path: "/register",
+      name: "Register",
+      component: importComponent("Register"),
     },
   ],
 });
