@@ -14,14 +14,19 @@ const router = new VueRouter({
     {
       path: "/",
       name: "dashboard",
-      header: importComponent("Navbar"),
       component: importComponent("HelloWorld"),
       children: [
-        //Dashboard
+        //Login
         {
-          path: "/",
-          name: "Root",
-          component: importComponent("HelloWorld"),
+          path: "/login",
+          name: "Login",
+          component: importComponent("Login"),
+        },
+        //Register
+        {
+          path: "/register",
+          name: "Register",
+          component: importComponent("Register"),
         },
       ],
     },
