@@ -1,20 +1,13 @@
 <template>
   <v-app>
-    <navbar-component></navbar-component>
     <router-view></router-view>
-    <footer-component></footer-component>
   </v-app>
 </template>
 
 <script>
-import Header from "@/components/Navbar.vue";
-import Footer from "@/components/Footer.vue";
+
 export default {
   name: 'App',
-  components: {
-    "navbar-component": Header,
-    "footer-component": Footer,
-  },
 }
 </script>
 
@@ -23,7 +16,7 @@ export default {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
+  /* text-align: center; */
   color: #2c3e50;
 }
 
@@ -31,13 +24,14 @@ export default {
   :root {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-align: center;
+    /* text-align: center; */
     overflow-x: hidden;
   }
+
   body{
     font-family: 'Open Sans', sans-serif;
     font-weight: normal;
-    color: #151D65 !important;
+    color: #7A9B57 !important;
     background-color: #f2f5f7 !important;
   }
 
@@ -52,41 +46,21 @@ export default {
   }
   /* Handle */
   ::-webkit-scrollbar-thumb {
-    background: #151d65;
+    background: #7A9B57;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #3d4cbf;
+    background: #455E14;
     cursor: pointer;
   }
 
-    a {
-    transition: color 0.3s ease-in-out;
-  }
-  .bg-info {
-    background-color: #f2f5f7 !important;
+  #color-1{
+    background-color: #E5EEDA;
   }
 
-    .input-group-text {
-    color: #151d65;
-    background-color: #F6F6F6!important;
-    border-color: #F6F6F6!important;
-    border-radius: .5rem 0 0 .5rem !important;
-  }
-  input {
-    color: #151d65;
-    background-color: #F6F6F6!important;
-    border: none !important;
-  }
   .form-control {
     border: 1px solid #f6f6f6;
     border-radius: 0 .5rem .5rem 0 !important;
     background-color: #F6F6F6!important;
-  }
-
-
-#page{
-  background-color: #F2F5F7 !important;
-  padding-left: 10%;
   }
 
 </style>
