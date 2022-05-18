@@ -110,6 +110,36 @@
                         </v-list-item-content>
                     </v-list-item>
                 </v-list-group>
+                <!-- Data Master -->
+                <v-list-group
+                    v-model="selectedItem4"
+                    :value="true"
+                    color="#455E14"
+                    prepend-icon="mdi-folder"
+                    class="mt-3"
+                >
+                    <template v-slot:activator>
+                        <v-list-item-content>
+                            <v-list-item-title class='' style="color:#455E14; font-weight:bold">Data Laporan</v-list-item-title>
+                        </v-list-item-content>
+                    </template>
+                    <v-list-item
+                        v-for="item in itemsOwner4"
+                        :key="item.title"
+                        class="text-decoration-none ml-5"
+                        link
+                        active-class="black--text"
+                        router-link
+                        :to="item.to"
+                    >
+                        <v-list-item-icon>
+                            <v-icon small color="#455E14">{{item.icon}}</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-content>
+                            <v-list-item-title v-text="item.title" style="color:#455E14;" ></v-list-item-title>
+                        </v-list-item-content>
+                    </v-list-item>
+                </v-list-group>
             </v-list>
 
             <v-list rounded v-if="id_role==2" dense>
@@ -287,6 +317,9 @@ export default{
             itemsOwner3:[
                 { title: "Daftar Royalty Point", to: "/royalty-point", icon: "mdi-format-list-bulleted"},
                 { title: "Kupon Diskon", to: "/kupon", icon: "mdi-credit-card"},
+            ],
+            itemsOwner4:[
+                { title: "Laporan Penjualan", to: "/laporan-penjualan", icon: "mdi-format-list-bulleted"},
             ],
             itemsWaiter:[
                 { title: "Customer", to: "/customer", icon: "mdi-account-multiple"},

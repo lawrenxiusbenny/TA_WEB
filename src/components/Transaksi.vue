@@ -4,7 +4,7 @@
       <h1 class="font-weight-medium mb-5 font-weight-black">
         Daftar Transaksi
       </h1>
-      <v-card style="background-color: #E5EEDA">
+      <v-card style="background-color: #E5EEDA; padding-bottom:20px">
         <v-card-title>
           <v-text-field
             v-model="search"
