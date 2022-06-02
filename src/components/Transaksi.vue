@@ -176,7 +176,7 @@
                                     </template>
                                     <template v-slot:[`item.gambar_menu`]="{ item }">
                                         <div class="p-2">
-                                          <img :src="'http://127.0.0.1:8000/Gambar_menu/' + item.gambar_menu" width="150px"/>
+                                          <img :src="'http://api.roemahsoto.xyz/Gambar_menu/' + item.gambar_menu" width="150px"/>
                                         </div>
                                     </template>
                                     <template v-slot:[`item.sub_total`]="{ item }">

@@ -360,6 +360,16 @@ export default {
     };
   },
   methods: {
+    getTanggalHariIni(){
+        var today = new Date();
+
+        var dd = String(today.getDate()).padStart(2, '0');
+        var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+        var yyyy = today.getFullYear();
+
+        today = yyyy + '-' + mm + '-' + dd ;
+        this.today = today;
+    },
     getJabatan(){
       var url = this.$api + "/role";
         this.$http
@@ -588,6 +598,7 @@ export default {
     this.readData();
     this.readDataNon();
     this.getJabatan();
+    this.getTanggalHariIni();
     
   },
 };

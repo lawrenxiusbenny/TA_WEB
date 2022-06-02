@@ -254,12 +254,12 @@ export default {
         { text: "Aksi", align: "center", value: "actions" },
       ],
 
-        nameRules: [(v) => !!v || "Nama karyawan tidak boleh kosong"],
+        nameRules: [(v) => !!v || "Nama customer tidak boleh kosong"],
       teleponRules: [
-        (v) => !!v || "Nomor telepon karyawan tidak boleh kosong",
+        (v) => !!v || "Nomor telepon customer tidak boleh kosong",
         (v) =>
           (v && v.length >= 11 && v.length <= 13) ||
-          "Nomor telepon karyawan harus 11-13 Digit",
+          "Nomor telepon customer harus 11-13 Digit",
       ],
       tanggalRules: [(v) => !!v || "Tanggal lahir tidak boleh kosong"],
       emailRules: [
@@ -286,6 +286,16 @@ export default {
     };
   },
   methods: {
+    getTanggalHariIni(){
+        var today = new Date();
+
+        var dd = String(today.getDate()).padStart(2, '0');
+        var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+        var yyyy = today.getFullYear();
+
+        today = yyyy + '-' + mm + '-' + dd ;
+        this.today = today;
+    },
     readData() {
       this.loading = true;
       var url = this.$api + "/customer";
@@ -448,6 +458,7 @@ export default {
   mounted() {
     this.token = localStorage.getItem("token");
     this.readData();
+    this.getTanggalHariIni();
   },
 };
 </script>

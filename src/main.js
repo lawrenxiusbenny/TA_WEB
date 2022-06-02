@@ -25,8 +25,8 @@ import "@mdi/font/css/materialdesignicons.css";
 
 Vue.config.productionTip = false;
 Vue.prototype.$http = axios;
-Vue.prototype.$api = "http://127.0.0.1:8000/api";
-Vue.prototype.$url = "http://127.0.0.1:8000/";
+Vue.prototype.$api = "https://api.roemahsoto.xyz/api";
+Vue.prototype.$url = "https://api.roemahsoto.xyz/";
 
 new Vue({
   vuetify,
