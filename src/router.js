@@ -169,6 +169,13 @@ const router = new VueRouter({
       meta: { title: "Login" },
       component: importComponent("Login"),
     },
+    //show menu
+    {
+      path: "/show-menu",
+      name: "Menu",
+      meta: { title: "Show Menu" },
+      component: importComponent("DataMenu"),
+    },
   ],
 });
 

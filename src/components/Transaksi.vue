@@ -63,8 +63,9 @@
                             </v-chip>
                         </template>
                         <template v-slot:[`item.actions`]="{ item }">
-                            <v-icon small color="blue" class="mr-2" @click="showStruk(item)">mdi-cloud-print-outline</v-icon>
-                            <v-icon small color="green" class="mr-2" @click="editStatusHandler(item)">mdi-pencil</v-icon>
+                            <v-icon v-if="item.status_transaksi == 'Lunas'" small color="blue" class="mr-2" @click="showStruk(item)">mdi-cloud-print-outline</v-icon>
+                            <v-icon v-if="item.status_transaksi == 'Belum Lunas'" small color="green" class="mr-2" @click="editStatusHandler(item)">mdi-pencil</v-icon>
+                            <v-icon v-if="item.status_transaksi == 'Belum Lunas'" small color="red" class="mr-2" @click="cancelTransaksiHandler(item)">mdi-close</v-icon>
                         </template>
                     </v-data-table>
                 </b-tab>
@@ -174,14 +175,20 @@
                                             {{item.nama_status}}
                                         </v-chip>
                                     </template>
+                                    <template v-slot:[`item.harga_menu`]="{ item }">
+                                      Rp {{formatPrice(item.harga_menu)}}
+                                    </template>
+                                    <template v-slot:[`item.sub_total`]="{ item }">
+                                      Rp {{formatPrice(item.sub_total)}}
+                                    </template>
                                     <template v-slot:[`item.gambar_menu`]="{ item }">
                                         <div class="p-2">
                                           <img :src="'http://api.roemahsoto.xyz/Gambar_menu/' + item.gambar_menu" width="150px"/>
                                         </div>
                                     </template>
-                                    <template v-slot:[`item.sub_total`]="{ item }">
-                                        Rp{{formatPrice(item.sub_total)}}
-                                    </template>
+                                    
+                                
+
                                     <template v-slot:[`item.actions`]="{ item }">
                                         <v-icon small color="blue" class="mr-2" @click="editHandler(item)">mdi-pencil</v-icon>
                                         <v-icon small color="red" class="mr-2" @click="deleteHandler(item)">mdi-delete</v-icon>
@@ -198,7 +205,7 @@
                                                 <p>Subtotal</p>
                                             </div>
                                             <div style="align: right;" >
-                                              Rp {{formatPrice(this.selected.reduce((acc, item) => acc + (item.sub_total), 0))}}
+                                              Rp {{formatPrice(this.selected.reduce((acc, item) => parseFloat(acc) + parseFloat(item.sub_total), 0))}}
                                             </div>
                                         </div>
                                         <v-divider></v-divider>
@@ -207,7 +214,7 @@
                                                 <h4 class="font-weight-bold">Total</h4>
                                             </div>
                                             <div style="align: right;" >
-                                              Rp {{formatPrice(this.selected.reduce((acc, item) => acc + (item.sub_total), 0))}}
+                                              Rp {{formatPrice(this.selected.reduce((acc, item) => parseFloat(acc) + parseFloat(item.sub_total), 0))}}
                                             </div>
                                         </div>
                                     </v-container>
@@ -217,8 +224,8 @@
 
                         <v-divider class="my-5"></v-divider>
 
-                        <v-btn color="primary" @click="cekStep1" class="mr-5">Continue</v-btn>
-                        <v-btn color="secondary" @click="closeStepper">Cancel</v-btn>
+                        <v-btn color="primary" @click="cekStep1" class="mr-5">Lanjut</v-btn>
+                        <v-btn color="secondary" @click="closeStepper">Batal</v-btn>
                       </v-stepper-content>
 
                       <v-stepper-content step="2">
@@ -314,9 +321,9 @@
                                 </v-container>
                             </v-container>
                           <v-divider class="my-5"></v-divider>
-                        <v-btn @click="e1 = 1" class="mr-5">Back</v-btn>
-                        <v-btn color="primary" @click="save" class="mr-5">Continue</v-btn>
-                        <v-btn color="secondary" @click="closeStepper">Cancel</v-btn>
+                        <v-btn @click="e1 = 1" class="mr-5">Kembali</v-btn>
+                        <v-btn color="primary" @click="save" class="mr-5">Tambah</v-btn>
+                        <v-btn color="secondary" @click="closeStepper">Batal</v-btn>
                       </v-stepper-content>
 
                       <v-stepper-content step="3">
@@ -330,7 +337,7 @@
                             </div>
                           
                         </template>
-                        <v-btn color="secondary" @click="closeStepper">Close</v-btn>
+                        <v-btn color="secondary" @click="closeStepper">Tutup</v-btn>
                       </v-stepper-content>
                     </v-stepper-items>
                   </v-stepper>
@@ -445,6 +452,22 @@
             >Batal</v-btn
           >
           <v-btn color="grey" @click="saveData">Ya</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="dialogCancelTransaksi" persisten max-width="500px">
+      <v-card style="background-color:#E5EEDA;">
+        <v-card-title style="background-color: #7A9B57; margin-bottom: 20px">
+           <h4 class="text-h4 font-weight-medium mb-1">Konfirmasi Batal Transaksi</h4>
+        </v-card-title>
+        <v-card-text>Apakah anda yakin ingin membatalkan data transaksi ini?</v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="secondary" @click="dialogCancelTransaksi = false"
+            >Batal</v-btn
+          >
+          <v-btn color="grey" @click="cancelTransaksi">Ya</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -661,8 +684,8 @@ export default {
         },
         { text: "Nama pesanan", align: "center", value: "nama_menu" },
         { text: "Harga Menu", align: "center", value: "harga_menu" },
-        { text: "Sub Total", align: "left", value: "sub_total" },
         { text: "Jumlah", align: "center", value: "jumlah_pesanan" },
+        { text: "Sub Total", align: "center", value: "sub_total" },
         { text: "Status Penyajian", align: "center", value: "nama_status" },
         { text: "", align: "center", value: "actions" },
       ],
@@ -714,12 +737,14 @@ export default {
       editId: 0,
       editIdStatus:0,
       deleteId: 0,
+      cancelId:0,
       jumlahEdit: 0,
       namaMenuEdit: "",
 
       dialogEdit: false,
       dialogContinue:false,
       dialogSave: false,
+      dialogCancelTransaksi:false,
 
       totalHarga: 0,
       discount:0,
@@ -813,6 +838,32 @@ export default {
         this.$http
         .put(url,newData
             ,{
+                headers:{
+                    Authorization: "Bearer " + this.token,
+                }
+            }
+        )
+        .then((response) => {
+            this.error_message = response.data.OUT_MESSAGE;
+            this.color = "green"
+            this.snackbar = true;
+            this.load = false;
+            this.readData();
+        })
+        .catch((error) => {
+            this.error_message = error.response.data.message;
+            this.color = "red";
+            this.snackbar = true;
+            this.load = false;
+        });
+    },
+    cancelTransaksi(){
+        this.dialogCancelTransaksi = false;
+        this.load = true;
+        var url = this.$api + "/transaksi/"+ this.cancelId;
+        let newData;
+        this.$http
+        .delete(url,{
                 headers:{
                     Authorization: "Bearer " + this.token,
                 }
@@ -974,7 +1025,7 @@ export default {
 
         this.formTransaksi.id_customer = this.formInput.id_customer;
         this.formTransaksi.id_karyawan = localStorage.getItem('id_karyawan');
-        this.formTransaksi.total_harga = this.selected.reduce((acc, item) => acc + (item.sub_total), 0);
+        this.formTransaksi.total_harga = this.selected.reduce((acc, item) => parseFloat(acc) + parseFloat(item.sub_total), 0);
         this.formTransaksi.status_transaksi = "Lunas";
       if(this.$refs.formTransaksi.validate()){
           this.dialogSave = true;
@@ -1062,6 +1113,10 @@ export default {
       this.jumlahEdit = item.jumlah_pesanan;
       this.namaMenuEdit= item.nama_menu;
       this.dialogEdit = true;
+    },
+    cancelTransaksiHandler(item){
+      this.cancelId = item.id_transaksi;
+      this.dialogCancelTransaksi = true;
     },
     update(){
         if(this.$refs.formEdit.validate()){
