@@ -680,7 +680,6 @@ export default {
         
 
         var url = this.$api + "/pesanan";
-
         this.$http
           .post(url, this.pesanan, {
             headers: {

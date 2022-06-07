@@ -542,13 +542,6 @@ export default {
     save() {
       if (this.$refs.form.validate()) {
         this.loading = true;
-        // if (this.form.id_role == "Chef") {
-        //   this.id_role = 3;
-        // } else if (this.form.id_role == "Waiter") {
-        //   this.id_role = 2;
-        // } else if (this.form.id_role == "Owner") {
-        //   this.id_role = 1;
-        // }
         this.karyawan.append("id_role", this.form.id_role);
         this.karyawan.append("nama_karyawan", this.form.nama_karyawan);
         this.karyawan.append("jenis_kelamin_karyawan", this.form.jenis_kelamin_karyawan);
@@ -556,8 +549,7 @@ export default {
         this.karyawan.append("email_karyawan", this.form.email_karyawan);
         this.karyawan.append("tanggal_bergabung", this.form.tanggal_bergabung);
         this.karyawan.append("password", this.form.password);
-        
-
+      
         var url = this.$api + "/karyawan";
 
         this.$http

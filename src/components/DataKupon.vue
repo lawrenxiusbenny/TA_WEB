@@ -231,7 +231,7 @@
         >
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="secondary" @click="dialogConfirm = false">Batal</v-btn>
+          <v-btn color="secondary" @click="dialogConfirm2 = false">Batal</v-btn>
           <v-btn color="grey" @click="deleteData2">Ya</v-btn>
         </v-card-actions>
       </v-card>

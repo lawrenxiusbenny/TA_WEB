@@ -24,6 +24,13 @@
             :search="search"
             >
             <template v-slot:[`item.actions`]="{ item }">
+              <v-icon
+                small
+                color="green"
+                class="mr-2"
+                @click="editPasswordHandler(item)"
+                >mdi-lock</v-icon
+                >
                 <v-icon
                 small
                 color="blue"
@@ -209,6 +216,69 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <v-dialog v-model="dialogEditPassword" max-width="600px">
+        <!-- <div class="cardinput">  -->
+            <v-card style="background-color:#E5EEDA;">
+                <v-card-title id="titleCard" class="font-weight-medium mb-3 justify-center text-h4 text-center">
+                    Ubah Password
+                </v-card-title>
+                <v-card-body>
+                <v-container>
+                    <v-form v-model="validPassword" ref="formPassword">
+                    <v-row>
+                        <v-col class="col-md-6 col-sm-12">
+                            <p>Password Baru</p>
+                            <v-text-field
+                              placeholder="password baru"
+                              :rules="passwordRules"
+                              v-model="formPassword.newPassword"
+                              type="password"
+                              outlined
+                              required
+                            >
+                                <template v-slot:prepend-inner>
+                                    <v-icon style="margin-right:15px; margin-left:5px; margin-top:-3px">mdi-key</v-icon>
+                                </template>
+                            </v-text-field>
+                        </v-col>
+                        <v-col class="col-md-6 col-sm-12">
+                            <p>Konfirmasi Password Baru</p>
+                            <v-text-field
+                              placeholder="password baru"
+                              :rules="confPasswordRules"
+                              v-model="formPassword.newPasswordConf"
+                              type="password"
+                              outlined
+                              required
+                            >
+                                <template v-slot:prepend-inner>
+                                    <v-icon style="margin-right:15px; margin-left:5px; margin-top:-3px">mdi-key</v-icon>
+                                </template>
+                            </v-text-field>
+                        </v-col>
+                    </v-row>
+                    <v-card-actions class="justify-content-center">
+                        <v-btn
+                        class="mr-5"
+                        depressed
+                        color="error"
+                        style="padding-left: 30px; padding-right: 30px"
+                        @click="cancelPassword"
+                        >
+                         Batal
+                        </v-btn>
+                        <v-btn depressed color="primary" @click="savePassword" style="padding-left: 30px; padding-right: 30px">
+                          Simpan
+                        </v-btn>
+                    </v-card-actions>
+                    </v-form>
+                </v-container>
+                </v-card-body>
+            </v-card>
+        <!-- </div> -->
+    </v-dialog>
+
     <v-overlay :value="loading">
       <v-progress-circular indeterminate :size="80" :width="5" color="primary">
       </v-progress-circular>
@@ -232,12 +302,14 @@ export default {
       color: "",
 
       valid: "false",
+      validPassword: "false",
       modal: "",
       search: "",
 
       tambah: true,
       dialogConfirm: false,
       dialogDelete: false,
+      dialogEditPassword:false,
 
       customers: [],
       headers: [
@@ -270,6 +342,10 @@ export default {
         (v) => !!v || "Password tidak boleh kosong",
         (v) => (v && v.length >= 6) || "Password harus minimal 6 karakter",
       ],
+       confPasswordRules: [
+        (v) => !!v || "Konfirmasi password tidak boleh kosong",
+        (v) => (v && v.length >= 6) || "Konfirmasi password harus minimal 6 karakter",
+      ],
 
       customer: new FormData(),
       form: {
@@ -279,8 +355,13 @@ export default {
         password_customer: null,
         tanggal_lahir_customer: null,
       },
+      formPassword:{
+        newPassword: null,
+        newPasswordConf: null,
+      },
       deleteId: "",
       editId: "",
+      editPasswordId:'',
       loading: false,
       today: "",
     };
@@ -316,6 +397,49 @@ export default {
           this.loading = false;
         });
     },
+    savePassword(){
+      if (this.$refs.formPassword.validate()) {
+        if(this.formPassword.newPasswordConf != this.formPassword.newPassword){
+          this.error_message = "Konfirmasi password baru harus sama dengan password yang baru";
+          this.color = "red";
+          this.snackbar = true;
+        }else{
+          this.dialogEditPassword = false;
+          this.loading = true;
+
+          let newData = {
+            new_password: this.formPassword.newPassword,
+          };
+
+          var url = this.$api + "/customer-edit-password/" + this.editPasswordId;
+          this.$http
+            .put(url, newData, {
+              headers: {
+                Authorization: "Bearer " + this.token,
+              },
+            })
+            .then((response) => {
+              this.error_message = response.data.OUT_MESSAGE;
+              this.color = "green";
+              this.snackbar = true;
+              this.readData();
+              this.$refs.formPassword.reset();
+              this.loading = false;
+            })
+            .catch((error) => {
+              this.error_message = error.response.data.message;
+              this.color = "red";
+              this.snackbar = true;
+              this.loading = false;
+            });
+        }
+      }
+    },
+    cancelPassword(){
+      this.dialogEditPassword = false;
+      this.editPasswordId = 0;
+      this.$refs.formPassword.reset();
+    },
     setForm() {
         
       if (this.inputType === "Tambah") {
@@ -327,6 +451,10 @@ export default {
     Tambah() {
       this.tambah = false;
       this.titleForm = "Tambah Customer";
+    },
+    editPasswordHandler(item){
+      this.editPasswordId = item.id_customer;
+      this.dialogEditPassword = true;
     },
     editHandler(item) {
       this.inputType = "Ubah";
@@ -421,7 +549,6 @@ export default {
         this.customer.append("password_customer", this.form.password_customer);
 
         var url = this.$api + "/customer";
-
         this.$http
           .post(url, this.customer, {
             headers: {

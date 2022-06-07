@@ -861,7 +861,6 @@ export default {
         this.dialogCancelTransaksi = false;
         this.load = true;
         var url = this.$api + "/transaksi/"+ this.cancelId;
-        let newData;
         this.$http
         .delete(url,{
                 headers:{
