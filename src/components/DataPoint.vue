@@ -156,7 +156,8 @@ export default {
       tambah: false,
 
       namaCustomerRules: [(v) => !!v || "Nama Customer tidak boleh kosong"],
-      jumlahRules: [(v) => v>-1 || "Jumlah point tidak boleh negatif"],
+      jumlahRules: [(v) => v>-1 || "Jumlah point tidak boleh negatif",
+      (v) => !!v || "Jumlah point tidak boleh kosong",],
 
       dialogConfirm: false,
       dialogDelete: false,
