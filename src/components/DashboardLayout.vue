@@ -320,6 +320,7 @@ export default{
             ],
             itemsOwner4:[
                 { title: "Laporan Penjualan", to: "/laporan-penjualan", icon: "mdi-format-list-bulleted"},
+                { title: "Laporan Pendapatan", to: "/laporan-pendapatan", icon: "mdi-format-list-bulleted"},
             ],
             itemsWaiter:[
                 { title: "Customer", to: "/customer", icon: "mdi-account-multiple"},

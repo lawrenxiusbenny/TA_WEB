@@ -2,36 +2,13 @@
     <v-main>
         <div>
             <h1 class="font-weight-medium mb-5 font-weight-black">
-                Laporan Penjualan
+                Laporan Pendapatan
             </h1>
             <v-card style="background-color: #E5EEDA; padding-bottom:20px">
                 <v-card-title >
                     <v-form v-model="valid" ref="form">
                         <v-row jusify="center" align="center" v-if="form.waktu !== 'Tahunan'">
-                            <v-col cols="12" md="1" sm="12" align="center">
-                                <p class="font-weight-bold mb-5">Produk</p>
-                            </v-col>
-                            <v-col cols="12" md="2" sm="12">
-                                <v-col cols="12">
-                                    <v-row>
-                                        <v-select
-                                            :rules="namaMenuRules"
-                                            :items="menuOptions"
-                                            item-text="nama_menu"
-                                            item-value="id_menu"
-                                            v-model="form.id_menu"
-                                            placeholder="pilih menu"
-                                            outlined
-                                            required
-                                        >
-                                            <template v-slot:prepend-inner>
-                                                <v-icon style="margin-right:15px; margin-left:5px; margin-top:-3px">mdi-food-fork-drink</v-icon>
-                                            </template>
-                                        </v-select>
-                                    </v-row>
-                                </v-col>
-                            </v-col>
-                            <v-col cols="12" md="1" sm="12" align="center">
+                            <v-col cols="12" md="2" sm="12" align="center">
                                 <p class="font-weight-bold mb-5">Waktu</p>
                             </v-col>
                             <v-col cols="12" md="6" v-if="form.waktu === 'Harian'">
@@ -82,7 +59,7 @@
                                     </v-col>
                                 </v-row>
                             </v-col>
-                            <v-col cols="12" md="4" v-else>
+                            <v-col cols="12" md="6" v-else>
                                 <v-row >
                                     <v-col cols="12" md="6" sm="12">
                                         <v-select
@@ -127,32 +104,9 @@
                         </v-row>
                         <v-row jusify="center" align="center" v-else>
                             <v-col cols="12" md="2" sm="12" align="center">
-                                <p class="font-weight-bold mb-5">Produk</p>
-                            </v-col>
-                            <v-col cols="12" md="3" sm="12">
-                                <v-col cols="12">
-                                    <v-row>
-                                        <v-select
-                                            :rules="namaMenuRules"
-                                            :items="menuOptions"
-                                            item-text="nama_menu"
-                                            item-value="id_menu"
-                                            v-model="form.id_menu"
-                                            placeholder="pilih menu"
-                                            outlined
-                                            required
-                                        >
-                                            <template v-slot:prepend-inner>
-                                                <v-icon style="margin-right:15px; margin-left:5px; margin-top:-3px">mdi-food-fork-drink</v-icon>
-                                            </template>
-                                        </v-select>
-                                    </v-row>
-                                </v-col>
-                            </v-col>
-                            <v-col cols="12" md="2" sm="12" align="center">
                                 <p class="font-weight-bold mb-5">Waktu</p>
                             </v-col>
-                            <v-col cols="12" md="3">
+                            <v-col cols="12" md="4">
                                 <v-row >
                                     <v-col cols="12">
                                         <v-select
@@ -226,19 +180,16 @@
                                                         <tr>
                                                             <th class="text-center">No.</th>
                                                             <th class="text-center">Tanggal</th>
-                                                            <th style="text-align:center;">Jumlah Penjualan</th>
                                                             <th style="text-align:center;">Total Pendapatan</th>
                                                         </tr>
                                                         <tr v-for="(item,index) in data" :key="index">
                                                             <td style="text-align:center;">{{item.nomor}}</td>
                                                             <td  style="text-align:center;">{{item.tanggal}}</td>
-                                                            <td v-if="item.jumlah != 0" style="text-align:center;">{{item.jumlah}}</td>
-                                                            <td v-else style="text-align:center;">-</td>
-                                                            <td v-if="item.pendapatan != 0" style="text-align:center;">Rp. {{formatPrice(item.pendapatan)}}</td>
+                                                            <td v-if="item.jumlah != 0" style="text-align:center;">Rp. {{formatPrice(item.jumlah)}}</td>
                                                             <td v-else style="text-align:center;">-</td>
                                                         </tr>
                                                         <tr>
-                                                            <td style="text-align:center;" class="total" colspan="3">Total</td>
+                                                            <td style="text-align:center;" class="total" colspan="2">Total</td>
                                                             <td style="text-align:center;" class="total">Rp. {{formatPrice(total)}}</td>
                                                         </tr>
                                                     </table>
@@ -270,7 +221,7 @@
 import ApexCharts from 'apexcharts';
 export default {
     
-    name:"Laporan Penjualan",
+    name:"Laporan Pendapatan",
     data(){
         return{
             token:'',
@@ -308,15 +259,11 @@ export default {
                             {id_bulan:11,nama_bulan:'November'},
                             {id_bulan:12,nama_bulan:'Desember'},
                         ],
-
-            namaMenuRules: [(v) => !!v || "Nama menu tidak boleh kosong"],
             waktuRules: [(v) => !!v || "Waktu tidak boleh kosong"],
             bulanRules: [(v) => !!v || "Bulan tidak boleh kosong"],
             tahunRules: [(v) => !!v || "Tahun tidak boleh kosong"],
 
             form:{
-                id_menu:null,
-                nama_menu:null,
                 waktu:null,
                 bulan:null,
                 nama_bulan:null,
@@ -329,33 +276,21 @@ export default {
         }
     },
     methods:{
-        readNamaMenu(){
-            var url = this.$api + "/menu-name";
-            this.$http
-            .get(url, {
-            headers: {
-                Authorization: "Bearer " + this.token,
-            },
-            })
-            .then((response) => {
-            this.menuOptions = response.data.OUT_DATA;
-            if(this.menuOptions == null){
-                this.menuOptions = [];
-            }
-            })
-            .catch((error) => {
-                console.log(error.response.data.message)
-            });
-        },
         formatPrice(value) {
             let val = (value/1).toFixed(2).replace('.', ',')
             return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+        },
+        getTahunOption(){
+            var date = new Date().getFullYear();
+            for(let i = 2020; i<=date;i++){
+                this.tahunOptions.push(i);
+            }
         },
         getDataHarian(){
             var tambahan;
             this.load = true;
             console.log(this.form.id_bulan)
-            var url = this.$api + "/laporan-harian/"+this.form.id_menu+"/"+this.form.id_bulan+"/"+this.form.tahun;
+            var url = this.$api + "/laporan-harian-pendapatan/"+this.form.id_bulan+"/"+this.form.tahun;
             this.$http
             .get(url, {
                 headers: {
@@ -368,19 +303,17 @@ export default {
                 this.kategoriHarian = response.data.OUT_TANGGAL;
                 this.data = response.data.OUT_DATA;
 
-                var nama_menu;
                 var nama_bulan;
 
-                nama_menu = response.data.MENU_NAME;
                 nama_bulan = response.data.MONTH_NAME
 
-                this.titleLaporanTable = "Laporan Penjualan " + nama_menu + " Roemah Soto Bulan " + nama_bulan + " " + this.form.tahun;
+                this.titleLaporanTable = "Laporan Pendapatan Roemah Soto Bulan " + nama_bulan + " " + this.form.tahun;
                 this.total = response.data.TOTAL;
 
                 this.showLaporan = true;
                 tambahan="Bulan "+ nama_bulan +" "+this.form.tahun;
                 
-                this.createChart(this.dataChartHarian, this.kategoriHarian, nama_menu, tambahan);
+                this.createChart(this.dataChartHarian, this.kategoriHarian, tambahan);
                 this.load = false;
             })
             .catch((error) => {
@@ -392,7 +325,7 @@ export default {
             var tambahan;
             this.load = true;
 
-            var url = this.$api + "/laporan-bulanan/"+this.form.id_menu+"/"+this.form.tahun;
+            var url = this.$api + "/laporan-bulanan-pendapatan/"+this.form.tahun;
             this.$http
             .get(url, {
                 headers: {
@@ -404,15 +337,12 @@ export default {
                 this.kategoriBulanan = response.data.OUT_TANGGAL;
                 this.data = response.data.OUT_TABLE;
                 
+                this.titleLaporanTable = "Laporan Pendapatan Roemah Soto Bulanan Tahun " + this.form.tahun;
                 this.total = response.data.TOTAL;
-                var nama_menu;
-
-                this.titleLaporanTable = "Laporan Penjualan Roemah Soto Bulanan Tahun " + this.form.tahun;
-                nama_menu = response.data.MENU_NAME
                 this.showLaporan = true;
                 tambahan="Bulanan Tahun " + this.form.tahun;
                 
-                this.createChart(this.dataChartBulanan, this.kategoriBulanan, nama_menu, tambahan);
+                this.createChart(this.dataChartBulanan, this.kategoriBulanan, tambahan);
                 this.load = false;
             })
             .catch((error) => {
@@ -423,7 +353,7 @@ export default {
             var tambahan;
             this.load = true;
 
-            var url = this.$api + "/laporan-tahunan/"+this.form.id_menu;
+            var url = this.$api + "/laporan-tahunan-pendapatan";
             this.$http
             .get(url, {
                 headers: {
@@ -435,15 +365,12 @@ export default {
                 this.kategoriTahunan = response.data.OUT_TANGGAL;
                 this.data = response.data.OUT_TABLE;
 
-                var nama_menu;
-                nama_menu = response.data.MENU_NAME
-
-                this.titleLaporanTable = "Laporan Penjualan Roemah Soto Tahunan";
+                this.titleLaporanTable = "Laporan Pendapatan Roemah Soto Tahunan";
                 this.showLaporan = true;
                 tambahan="Tahunan";
                 this.total = response.data.TOTAL;
                 
-                this.createChart(this.dataChartTahunan, this.kategoriTahunan, nama_menu, tambahan);
+                this.createChart(this.dataChartTahunan, this.kategoriTahunan, tambahan);
                 this.load = false;
             })
             .catch((error) => {
@@ -462,10 +389,10 @@ export default {
                 }
             }
         },
-        createChart(dataChart,kategori,namaProduk,tambahanTitle){
+        createChart(dataChart,kategori,tambahanTitle){
             var options = {
                 title: {
-                    text: "Grafik Penjualan " + namaProduk + " Roemah Soto " + tambahanTitle,
+                    text: "Grafik Pendapatan Roemah Soto " + tambahanTitle,
                     align: 'left',
                     floating: false,
                     style: {
@@ -483,7 +410,7 @@ export default {
                 },
                 series: [
                     {
-                        name:"Jumlah Penjualan",
+                        name:"Jumlah Pendapatan (Rp)",
                         data:dataChart
                     },
                 ],
@@ -510,16 +437,9 @@ export default {
             //     data:this.series[0].data
             // }])
         },
-         getTahunOption(){
-            var date = new Date().getFullYear();
-            for(let i = 2020; i<=date;i++){
-                this.tahunOptions.push(i);
-            }
-        },
     },
     mounted() {
         this.token = localStorage.getItem('token');
-        this.readNamaMenu();
         this.getTahunOption();
         // this.id_karyawan=localStorage.getItem('id_karyawan');
     },    

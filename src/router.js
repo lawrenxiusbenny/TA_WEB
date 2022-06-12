@@ -160,6 +160,23 @@ const router = new VueRouter({
             }
           },
         },
+        {
+          path: "/laporan-pendapatan",
+          name: "Laporan Pendapatan",
+          meta: { title: "Laporan Pendapatan" },
+          component: importComponent("LaporanPendapatan"),
+          beforeEnter: (to, from, next) => {
+            if (localStorage.getItem("id_role") == 1) {
+              next();
+            } else {
+              if (localStorage.getItem("id_role") == 2) {
+                next("/customer");
+              } else if (localStorage.getItem("id_role") == 3) {
+                next("/pesanan");
+              }
+            }
+          },
+        },
       ],
     },
     //login
