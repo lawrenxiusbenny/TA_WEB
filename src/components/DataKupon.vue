@@ -322,7 +322,11 @@ export default {
           },
         })
         .then((response) => {
-          this.kuponCustomers = response.data.OUT_DATA;
+          if(response.data.OUT_DATA == null){
+            this.kuponCustomers = [];
+          }else{
+             this.kuponCustomers = response.data.OUT_DATA;
+          }
         })
         .catch((error) => {
           console.log(error.response.data.message)
@@ -339,7 +343,11 @@ export default {
         })
         .then((response) => {
           this.loading = false;
-          this.kuponDiskons = response.data.OUT_DATA;
+          if(response.data.OUT_DATA == null){
+            this.kuponDiskons = [];
+          }else{
+             this.kuponDiskons = response.data.OUT_DATA;
+          }
         })
         .catch((error) => {
           this.error_message = error.response.data.OUT_MESSAGE;

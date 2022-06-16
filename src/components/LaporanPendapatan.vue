@@ -180,16 +180,33 @@
                                                         <tr>
                                                             <th class="text-center">No.</th>
                                                             <th class="text-center">Tanggal</th>
+                                                            <th class="text-center">Makanan</th>
+                                                            <th class="text-center">Minuman</th>
+                                                            <th class="text-center">Lain</th>
                                                             <th style="text-align:center;">Total Pendapatan</th>
                                                         </tr>
                                                         <tr v-for="(item,index) in data" :key="index">
                                                             <td style="text-align:center;">{{item.nomor}}</td>
                                                             <td  style="text-align:center;">{{item.tanggal}}</td>
-                                                            <td v-if="item.jumlah != 0" style="text-align:center;">Rp. {{formatPrice(item.jumlah)}}</td>
+                                                            <td v-if="item.jumlah_makanan != 0" style="text-align:center;">Rp. {{formatPrice(item.jumlah_makanan)}}</td>
+                                                            <td v-else style="text-align:center;">-</td>
+                                                            <td v-if="item.jumlah_minuman != 0" style="text-align:center;">Rp. {{formatPrice(item.jumlah_minuman)}}</td>
+                                                            <td v-else style="text-align:center;">-</td>
+                                                            <td v-if="item.jumlah_lain != 0" style="text-align:center;">Rp. {{formatPrice(item.jumlah_lain)}}</td>
+                                                            <td v-else style="text-align:center;">-</td>
+                                                            <td v-if="item.jumlahTotalBaris != 0" style="text-align:center;">Rp. {{formatPrice(item.jumlahTotalBaris)}}</td>
                                                             <td v-else style="text-align:center;">-</td>
                                                         </tr>
                                                         <tr>
-                                                            <td style="text-align:center;" class="total" colspan="2">Total</td>
+                                                            <td style="text-align:center;" class="total" colspan="5">Total Pendapatan Kotor</td>
+                                                            <td style="text-align:center;" class="total">Rp. {{formatPrice(kotor)}}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td style="text-align:center;" class="total" colspan="5">Pengeluaran Diskon</td>
+                                                            <td style="text-align:center;" class="total">Rp. {{formatPrice(diskon)}}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td style="text-align:center;" class="total" colspan="5">Total Pendapatan Bersih</td>
                                                             <td style="text-align:center;" class="total">Rp. {{formatPrice(total)}}</td>
                                                         </tr>
                                                     </table>
@@ -240,6 +257,8 @@ export default {
             data:[],
 
             total:0,
+            kotor:0,
+            diskon:0,
 
 
             menuOptions:[],
@@ -309,6 +328,8 @@ export default {
 
                 this.titleLaporanTable = "Laporan Pendapatan Roemah Soto Bulan " + nama_bulan + " " + this.form.tahun;
                 this.total = response.data.TOTAL;
+                this.kotor = response.data.JUMLAH_KOTOR;
+                this.diskon = response.data.DISKON;
 
                 this.showLaporan = true;
                 tambahan="Bulan "+ nama_bulan +" "+this.form.tahun;
@@ -339,6 +360,8 @@ export default {
                 
                 this.titleLaporanTable = "Laporan Pendapatan Roemah Soto Bulanan Tahun " + this.form.tahun;
                 this.total = response.data.TOTAL;
+                this.kotor = response.data.JUMLAH_KOTOR;
+                this.diskon = response.data.DISKON;
                 this.showLaporan = true;
                 tambahan="Bulanan Tahun " + this.form.tahun;
                 
@@ -369,12 +392,15 @@ export default {
                 this.showLaporan = true;
                 tambahan="Tahunan";
                 this.total = response.data.TOTAL;
+                this.kotor = response.data.JUMLAH_KOTOR;
+                this.diskon = response.data.DISKON;
                 
                 this.createChart(this.dataChartTahunan, this.kategoriTahunan, tambahan);
                 this.load = false;
             })
             .catch((error) => {
                 console.log(error.response.data.message)
+                this.load=false;
             });    
         },
         generateLaporan(){

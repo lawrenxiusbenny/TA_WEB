@@ -5,8 +5,83 @@
                 Laporan Penjualan
             </h1>
             <v-card style="background-color: #E5EEDA; padding-bottom:20px">
-                <v-card-title >
-                    <v-form v-model="valid" ref="form">
+                <v-card-title > 
+                    <v-form v-if="form.id_menu == 'Semua'" v-model="valid" ref="form">
+                        <v-row jusify="center" align="center">
+                            <v-col cols="12" md="1" sm="12" align="center">
+                                <p class="font-weight-bold mb-5">Produk</p>
+                            </v-col>
+                            <v-col cols="12" md="2" sm="12">
+                                <v-col cols="12">
+                                    <v-row>
+                                        <v-select
+                                            :rules="namaMenuRules"
+                                            :items="menuOptions"
+                                            item-text="nama_menu"
+                                            item-value="id_menu"
+                                            v-model="form.id_menu"
+                                            placeholder="pilih menu"
+                                            outlined
+                                            required
+                                        >
+                                            <template v-slot:prepend-inner>
+                                                <v-icon style="margin-right:15px; margin-left:5px; margin-top:-3px">mdi-food-fork-drink</v-icon>
+                                            </template>
+                                        </v-select>
+                                    </v-row>
+                                </v-col>
+                            </v-col>
+                            <v-col cols="12" md="1" sm="12" align="center">
+                                <p class="font-weight-bold mb-5">Waktu</p>
+                            </v-col>
+                            <v-col cols="12" md="6">
+                                <v-row >
+                                    <v-col cols="12" md="4" sm="12">
+                                        <v-select 
+                                            :rules="bulanRules"
+                                            :items="bulanOptionsSemua"
+                                            item-text="nama_bulan"
+                                            item-value="id_bulan"
+                                            v-model="form.id_bulan"
+                                            placeholder="pilih bulan"
+                                            outlined
+                                            required
+                                        >
+                                            <template v-slot:prepend-inner>
+                                                <v-icon style="margin-right:15px; margin-left:5px; margin-top:-3px">mdi-calendar</v-icon>
+                                            </template>
+                                        </v-select>
+                                    </v-col>
+                                    <v-col cols="12" md="4" sm="12">
+                                        <v-select
+                                            :rules="tahunRules"
+                                            :items="tahunOptions"
+                                            v-model="form.tahun"
+                                            placeholder="pilih tahun"
+                                            outlined
+                                            required
+                                        >
+                                            <template v-slot:prepend-inner>
+                                                <v-icon style="margin-right:15px; margin-left:5px; margin-top:-3px">mdi-calendar</v-icon>
+                                            </template>
+                                        </v-select>
+                                    </v-col>
+                                    <v-col cols="12" md="2" sm="12" align="center">
+                                        <v-btn
+                                            class="ma-2 mb-7"
+                                            color="secondary" 
+                                            @click="generateLaporan" 
+                                            style="padding-left: 30px; padding-right: 30px"
+                                        >
+                                            Generate
+                                        </v-btn>
+                                    </v-col>
+                                </v-row>
+                            </v-col>
+                        </v-row>
+                    </v-form>
+
+                    <v-form v-else v-model="valid" ref="form">
                         <v-row jusify="center" align="center" v-if="form.waktu !== 'Tahunan'">
                             <v-col cols="12" md="1" sm="12" align="center">
                                 <p class="font-weight-bold mb-5">Produk</p>
@@ -252,6 +327,114 @@
                         </b-tabs>
                     </b-card>
                 </div>
+                <!-- Laporan Semua Produk -->
+                <div style="margin:20px;" v-show="showLaporanSemua">
+                    <b-card no-body style="background-color: #E5EEDA; border:2px solid #7A9B57; ">
+                        <b-card-text class="mt-5 mb-5">
+                            <div class="d-flex justify-content-center">
+                                <v-card  class="p-3" max-width="1000px" outlined style="border: px solid #dddddd">
+                                    <v-card-title>
+                                        <v-row justify="center" align="center">
+                                            <v-col cols="12" sm="12" md="4" align="center">
+                                                <img src="../assets/logo.png" alt="Logo Roemah Soto" width="250px" >
+                                            </v-col>
+                                            <v-col cols="12" sm="12" md="8" >
+                                                <h4 class="text-center" style="color:#344218">ROEMAH SOTO</h4>
+                                                <h4 class="text-center" style="color:#7A9B57">JALAN S.M. Tjsafioeddin No.25, Singkawang</h4>
+                                                <p class="text-center mb-0" style="color:#7A9B57">Kalimantan Barat 79122</p>
+                                                <p class="text-center mb-0" style="color:#7A9B57">Contact (+62)821-5935-9533</p>
+                                            </v-col>
+                                        </v-row>
+                                    </v-card-title>
+                                    <v-card-text>
+                                        <v-row>
+                                            <v-divider style="margin-left:0px; margin-right:0px; margin-top:-20px;" dark></v-divider>
+                                        </v-row>
+                                        <v-row>
+                                            <p class="text-center title">{{titleLaporanSemuaProduk}}</p>    
+                                        </v-row>
+                                        <v-row>
+                                            <p class="font-weight-bold">MAKANAN</p>
+                                        </v-row>
+                                        
+                                        <v-row style="margin-top:-10px">
+                                            <t-head>
+                                                <tr>
+                                                    <th width="50px" class="text-center">No</th>
+                                                    <th width="250px" style="text-align:center;">Nama Menu</th>
+                                                    <th width="300px" style="text-align:center;">Penjualan Harian Tertinggi</th>
+                                                    <th width="250px" style="text-align:center;">Total Penjualan</th>
+                                                </tr>
+                                            </t-head>
+                                        </v-row>
+                                        <v-row>
+                                            <t-body>
+                                                <tr v-for="(item,index) in makanans" :key="index">
+                                                    <td width="50px" class="text-center">{{item.nomor}}</td>
+                                                    <td width="250px" style="text-align:center;">{{item.nama_menu}}</td>
+                                                    <td width="300px" style="text-align:center;">{{item.penjualanTertinggi.totalJumlah}}</td>
+                                                    <td width="250px" style="text-align:center;">{{item.totalPenjualan}}</td>
+                                                </tr>
+                                            </t-body>
+                                        </v-row>
+                                        
+
+                                        <!-- Minuman -->
+                                        
+                                        <v-row style="margin-top:50px">
+                                            <p class="font-weight-bold">MINUMAN</p>
+                                        </v-row>
+                                        <v-row style="margin-top:-10px">
+                                            <t-head>
+                                                <tr>
+                                                     <th width="50px" class="text-center">No</th>
+                                                    <th width="250px" style="text-align:center;">Nama Menu</th>
+                                                    <th width="300px" style="text-align:center;">Penjualan Harian Tertinggi</th>
+                                                    <th width="250px" style="text-align:center;">Total Penjualan</th>
+                                                </tr>
+                                            </t-head>
+                                        </v-row>
+                                        <v-row>
+                                            <t-body>
+                                                <tr v-for="(item,index) in minumans" :key="index">
+                                                    <td width="50px" class="text-center">{{item.nomor}}</td>
+                                                    <td width="250px" style="text-align:center;">{{item.nama_menu}}</td>
+                                                    <td width="300px" style="text-align:center;">{{item.penjualanTertinggi.totalJumlah}}</td>
+                                                    <td width="250px" style="text-align:center;">{{item.totalPenjualan}}</td>
+                                                </tr>
+                                            </t-body>
+                                        </v-row>
+
+                                        <!-- Lain -->
+                                        <v-row style="margin-top:50px;">
+                                            <p class="font-weight-bold">Lain</p>
+                                        </v-row>
+                                        <v-row style="margin-top:-10px">
+                                            <t-head>
+                                                <tr>
+                                                    <th width="50px" class="text-center">No</th>
+                                                    <th width="250px" style="text-align:center;">Item Menu</th>
+                                                    <th width="300px" style="text-align:center;">Penjualan Harian Tertinggi</th>
+                                                    <th width="250px" style="text-align:center;">Total Penjualan</th>
+                                                </tr>
+                                            </t-head>
+                                        </v-row>
+                                        <v-row>
+                                            <t-body>
+                                                <tr v-for="(item,index) in lains" :key="index">
+                                                   <td width="50px" class="text-center">{{item.nomor}}</td>
+                                                    <td width="250px" style="text-align:center;">{{item.nama_menu}}</td>
+                                                    <td width="300px" style="text-align:center;">{{item.penjualanTertinggi.totalJumlah}}</td>
+                                                    <td width="250px" style="text-align:center;">{{item.totalPenjualan}}</td>
+                                                </tr>
+                                            </t-body>
+                                        </v-row>
+                                    </v-card-text>
+                                </v-card>
+                            </div>
+                        </b-card-text>
+                    </b-card>
+                </div>
             </v-card>
         </div>
 
@@ -276,6 +459,7 @@ export default {
             token:'',
             id_karyawan:'',
             titleLaporanTable:'',
+            titleLaporanSemuaProduk:'',
 
             dataChartHarian:[],
             kategoriHarian:[],
@@ -287,6 +471,9 @@ export default {
             kategoriTahunan:[],
 
             data:[],
+            makanans:[],
+            minumans:[],
+            lains:[],
 
             total:0,
 
@@ -308,6 +495,21 @@ export default {
                             {id_bulan:11,nama_bulan:'November'},
                             {id_bulan:12,nama_bulan:'Desember'},
                         ],
+            bulanOptionsSemua:[
+                {id_bulan:1,nama_bulan:'Januari'},
+                {id_bulan:2,nama_bulan:'Februari'},
+                {id_bulan:3,nama_bulan:'Maret'},
+                {id_bulan:4,nama_bulan:'April'},
+                {id_bulan:5,nama_bulan:'Mei'},
+                {id_bulan:6,nama_bulan:'Juni'},
+                {id_bulan:7,nama_bulan:'Juli'},
+                {id_bulan:8,nama_bulan:'Agustus'},
+                {id_bulan:9,nama_bulan:'September'},
+                {id_bulan:10,nama_bulan:'Oktober'},
+                {id_bulan:11,nama_bulan:'November'},
+                {id_bulan:12,nama_bulan:'Desember'},
+                {id_bulan:13,nama_bulan:'Semua'},
+            ],
 
             namaMenuRules: [(v) => !!v || "Nama menu tidak boleh kosong"],
             waktuRules: [(v) => !!v || "Waktu tidak boleh kosong"],
@@ -326,9 +528,41 @@ export default {
 
             load:false,
             showLaporan:false,
+            showLaporanSemua:false,
         }
     },
     methods:{
+        convertBulan(value){
+            let val = "";
+            if(value == 1){
+                val = "Januari";
+            }else if(value == 2){
+                val = "Februari";
+            }else if(value == 3){
+                val = "Maret";
+            }else if(value == 4){
+                val = "April";
+            }else if(value == 5){
+                val = "Mei";
+            }else if(value == 6){
+                val = "Juni";
+            }else if(value == 7){
+                val = "Juli";
+            }else if(value == 8){
+                val = "Agustus";
+            }else if(value == 9){
+                val = "September";
+            }else if(value == 10){
+                val = "Oktober";
+            }else if(value == 11){
+                val = "November";
+            }else if(value == 12){
+                val = "Desember";
+            }else {
+                val = "";
+            }
+            return val;
+        },
         readNamaMenu(){
             var url = this.$api + "/menu-name";
             this.$http
@@ -342,6 +576,7 @@ export default {
             if(this.menuOptions == null){
                 this.menuOptions = [];
             }
+            this.menuOptions.push("Semua")
             })
             .catch((error) => {
                 console.log(error.response.data.message)
@@ -354,7 +589,6 @@ export default {
         getDataHarian(){
             var tambahan;
             this.load = true;
-            console.log(this.form.id_bulan)
             var url = this.$api + "/laporan-harian/"+this.form.id_menu+"/"+this.form.id_bulan+"/"+this.form.tahun;
             this.$http
             .get(url, {
@@ -374,7 +608,7 @@ export default {
                 nama_menu = response.data.MENU_NAME;
                 nama_bulan = response.data.MONTH_NAME
 
-                this.titleLaporanTable = "Laporan Penjualan " + nama_menu + " Roemah Soto Bulan " + nama_bulan + " " + this.form.tahun;
+                this.titleLaporanTable = "Laporan Penjualan " + nama_menu + " Bulan " + nama_bulan + " " + this.form.tahun;
                 this.total = response.data.TOTAL;
 
                 this.showLaporan = true;
@@ -406,9 +640,8 @@ export default {
                 
                 this.total = response.data.TOTAL;
                 var nama_menu;
-
-                this.titleLaporanTable = "Laporan Penjualan Roemah Soto Bulanan Tahun " + this.form.tahun;
                 nama_menu = response.data.MENU_NAME
+                this.titleLaporanTable = "Laporan Penjualan "+nama_menu+" Bulanan Tahun " + this.form.tahun;
                 this.showLaporan = true;
                 tambahan="Bulanan Tahun " + this.form.tahun;
                 
@@ -438,7 +671,7 @@ export default {
                 var nama_menu;
                 nama_menu = response.data.MENU_NAME
 
-                this.titleLaporanTable = "Laporan Penjualan Roemah Soto Tahunan";
+                this.titleLaporanTable = "Laporan Penjualan "+nama_menu+" Tahunan";
                 this.showLaporan = true;
                 tambahan="Tahunan";
                 this.total = response.data.TOTAL;
@@ -452,20 +685,37 @@ export default {
         },
         generateLaporan(){
             console.log(this.form);
+            this.showLaporan = false;
+            this.showLaporanSemua  = false;
             if(this.$refs.form.validate()){
-                if(this.form.waktu === 'Bulanan'){
-                    this.getDataBulanan();
-                }else if(this.form.waktu === 'Tahunan'){
-                    this.getDataTahunan();
-                }else if(this.form.waktu === 'Harian'){
-                    this.getDataHarian();
+                if(this.form.id_menu === "Semua"){
+                    if(this.form.id_bulan==13){
+                        this.titleLaporanSemuaProduk = "Laporan Penjualan Semua Menu Roemah Soto Tahun "+this.form.tahun;
+                    }else{
+                        console.log(this.form.id_bulan)
+                        this.titleLaporanSemuaProduk = "Laporan Penjualan Semua Menu Roemah Soto Bulan "+this.convertBulan(this.form.id_bulan)+" Tahun "+this.form.tahun;
+                    }
+                    this.getLaporanMakanan();
+                    this.getLaporanMinuman();
+                    this.getLaporanLain();
+                }else{
+                    if(this.form.waktu === 'Bulanan'){
+                        this.getDataBulanan();
+                    }else if(this.form.waktu === 'Tahunan'){
+                        this.getDataTahunan();
+                    }else if(this.form.waktu === 'Harian'){
+                        this.getDataHarian();
+                    }
                 }
             }
+        },
+        getDataPenjualanSemua(){
+            this.showLaporanSemua = true;
         },
         createChart(dataChart,kategori,namaProduk,tambahanTitle){
             var options = {
                 title: {
-                    text: "Grafik Penjualan " + namaProduk + " Roemah Soto " + tambahanTitle,
+                    text: "Grafik Penjualan " + namaProduk + " " + tambahanTitle,
                     align: 'left',
                     floating: false,
                     style: {
@@ -510,11 +760,72 @@ export default {
             //     data:this.series[0].data
             // }])
         },
-         getTahunOption(){
+        getTahunOption(){
             var date = new Date().getFullYear();
             for(let i = 2020; i<=date;i++){
                 this.tahunOptions.push(i);
             }
+        },
+        getLaporanMakanan(){
+            this.load = true;
+            var url = this.$api + "/laporan-penjualan-semua-produk/1/"+this.form.id_bulan+"/"+this.form.tahun;
+            this.$http
+            .get(url
+                ,{
+                headers:{
+                    Authorization: "Bearer " + this.token,
+                }
+                }
+            )
+            .then((response) => {
+                this.makanans = response.data.data;
+            })
+            .catch((error) => {
+                this.error_message = error.response.data.message;
+                this.color = "red";
+                this.snackbar = true;
+            });
+        },
+        getLaporanMinuman(){
+            var url = this.$api + "/laporan-penjualan-semua-produk/2/"+this.form.id_bulan+"/"+this.form.tahun;
+            this.$http
+            .get(url
+                ,{
+                headers:{
+                    Authorization: "Bearer " + this.token,
+                }
+                }
+            )
+            .then((response) => {
+                this.minumans = response.data.data;
+            })
+            .catch((error) => {
+                this.error_message = error.response.data.message;
+                this.color = "red";
+                this.snackbar = true;
+            });
+        },
+        getLaporanLain(){
+            var url = this.$api + "/laporan-penjualan-semua-produk/3/"+this.form.id_bulan+"/"+this.form.tahun;
+            this.$http
+            .get(url
+                ,{
+                headers:{
+                    Authorization: "Bearer " + this.token,
+                }
+                }
+            )
+            .then((response) => {
+                this.lains = response.data.data;
+                this.showLaporanSemua = true;
+                this.load = false;
+            })
+            .catch((error) => {
+                this.error_message = error.response.data.message;
+                this.color = "red";
+                this.snackbar = true;
+                this.load = false;
+            });
         },
     },
     mounted() {

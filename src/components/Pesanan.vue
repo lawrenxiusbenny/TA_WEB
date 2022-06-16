@@ -11,10 +11,14 @@
             single-line
             hide-details
           ></v-text-field>
+          <v-icon
+            style="margin-top:15px"
+            class="ml-5"
+            @click="readData"
+          >
+            mdi-refresh
+          </v-icon>
           <v-spacer></v-spacer>
-          <v-btn class="light-blue darken-3 rounded" small dark @click="Tambah">
-            Tambah Pesanan
-          </v-btn>
         </v-card-title>
         <div>
             <v-data-table
@@ -53,34 +57,15 @@
                 >
                     <v-icon style="margin-top:-2px;margin-right:5px">mdi-mdi-check</v-icon>
                     {{item.nama_status}}
-                    <v-icon
-                      small
-                      color="green"
-                      class="ml-2"
-                      @click="editPenyajianHandler(item.id_pesanan)"
-                    >
-                      mdi-pencil
-                    </v-icon>
                 </v-chip>
-              </template>
-              <template v-slot:[`item.actions`]="{ item }">
-                <v-icon
-                  small
-                  color="blue"
-                  class="mr-2"
-                  @click="editHandler(item)"
-                  >mdi-pencil</v-icon
-                >
-                <v-icon
-                  small
-                  color="red"
-                  @click="deleteHandler(item.id_pesanan)"
-                  >mdi-delete
-                </v-icon>
               </template>
               <template v-slot:[`item.catatan`]="{ item }">
                   <span v-if="item.catatan === null">-</span>
                   <span v-else>{{item.catatan}}</span>
+              </template>
+              <template v-slot:[`item.nomor_meja`]="{ item }">
+                  <span v-if="item.nomor_meja <10 && item.nomor_meja > 0">0{{item.nomor_meja}}</span>
+                  <span v-else>{{item.nomor_meja}}</span>
               </template>
             </v-data-table>
         </div>
@@ -371,8 +356,8 @@ export default {
         { text: "Jumlah Pesanan", align: "center", value: "jumlah_pesanan" },
         { text: "Sub Total", align: "center", value: "sub_total" },
         { text: "Catatan", align: "center", value: "catatan" },
+        { text: "No. Meja", align: "center", value: "nomor_meja" },
         { text: "Status Penyajian", align: "center", value: "nama_status" },
-        { text: "Aksi", align: "center", value: "actions" },
       ],
 
         namaCustomerRules: [(v) => !!v || "Nama customer tidak boleh kosong"],
@@ -446,6 +431,7 @@ export default {
           },
         })
         .then((response) => {
+
           this.namaMenuOptions = response.data.OUT_DATA;
           if(this.namaMenuOptions == null){
             this.namaMenuOptions = [];
@@ -513,7 +499,12 @@ export default {
         })
         .then((response) => {
           this.loading = false;
-          this.pesanans = response.data.OUT_DATA;
+          if(response.data.OUT_DATA == null){
+            this.pesanans = [];
+          }else{
+             this.pesanans = response.data.OUT_DATA;
+          }
+          
         })
         .catch((error) => {
           this.error_message = error.response.data.message;

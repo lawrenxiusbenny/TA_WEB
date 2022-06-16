@@ -388,7 +388,11 @@ export default {
         })
         .then((response) => {
           this.loading = false;
-          this.customers = response.data.OUT_DATA;
+          if(response.data.OUT_DATA == null){
+            this.customers = [];
+          }else{
+             this.customers = response.data.OUT_DATA;
+          }
         })
         .catch((error) => {
           this.error_message = error.response.data.message;

@@ -222,7 +222,11 @@ export default {
             }
         )
         .then((response) => {
-          this.points= response.data.OUT_DATA;
+          if(response.data.OUT_DATA == null){
+            this.points = [];
+          }else{
+             this.points = response.data.OUT_DATA;
+          }
           this.load =false;
         })
         .catch((error) => {

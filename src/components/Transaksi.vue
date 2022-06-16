@@ -1,6 +1,6 @@
 <template>
     <v-main class="list">
-    <div>
+    <div v-show="tambahPending">
       <h1 class="font-weight-medium mb-5 font-weight-black">
         Daftar Transaksi
       </h1>
@@ -13,12 +13,31 @@
             single-line
             hide-details
           ></v-text-field>
+          <v-icon
+            style="margin-top:15px"
+            class="ml-5"
+            @click="refresh"
+          >
+            mdi-refresh
+          </v-icon>
           <v-spacer></v-spacer>
+          <v-btn class="light-blue darken-3 rounded" small dark @click="TambahPending">
+            Tambah Pesanan
+          </v-btn>
         </v-card-title>
         <div>
             <b-tabs active-nav-item-class="font-weight-bold text-uppercase text-success" content-class="mt-3" @click="readData()">
                 <b-tab title="Daftar Transaksi" class="text">
-                    <v-data-table style="background-color: #E5EEDA;" :headers="headers" :items="transaksis" :search="search">
+                    <v-data-table 
+                      style="background-color: #E5EEDA;" 
+                      :headers="headers" 
+                      :items="transaksis" 
+                      :search="search"
+                      :expanded.sync="expanded"
+                      :single-expand="singleExpand"
+                      item-key="id_transaksi"
+                      @click:row="readDataPesanan"
+                      show-expand>
                         <template v-slot:[`item.status_transaksi`]="{ item }">
                             <v-chip
                                 v-if="item.status_transaksi == 'Lunas'"
@@ -67,7 +86,45 @@
                             <v-icon v-if="item.status_transaksi == 'Belum Lunas'" small color="green" class="mr-2" @click="editStatusHandler(item)">mdi-pencil</v-icon>
                             <v-icon v-if="item.status_transaksi == 'Belum Lunas'" small color="red" class="mr-2" @click="cancelTransaksiHandler(item)">mdi-close</v-icon>
                         </template>
+                        <template v-slot:expanded-item="{headers}">
+                          <td :colspan="headers.length">
+                            <v-data-table
+                              style="margin-top:10px; margin-bottom:10px" 
+                              hide-default-footer
+                              :headers="headersPesanan"
+                              :items="dataPesanans"
+                              :loading="loadInfoPesanan"
+                              >
+                              <template v-slot:[`item.id_pesanan`]="{ item }">
+                                  <span>Order-{{item.id_pesanan}}</span>
+                              </template>
+                              <template v-slot:[`item.sub_total`]="{ item }">
+                                  Rp {{formatPrice(item.sub_total)}}
+                              </template>
+                            </v-data-table>
+                          </td>
+                        </template>
                     </v-data-table>
+                </b-tab>
+                <b-tab title="Pesanan Pending" class="text">
+                  <v-data-table
+                    style="background-color: #E5EEDA"
+                    :items="pesanansPending"
+                    :headers="headersPesananPending"
+                    :search="search"
+                  >
+                    <template v-slot:[`item.id_pesanan`]="{ item }">
+                        <span>Order-{{item.id_pesanan}}</span>
+                    </template>
+                    <template v-slot:[`item.catatan`]="{ item }">
+                        <span v-if="item.catatan === null">-</span>
+                        <span v-else>{{item.catatan}}</span>
+                    </template>
+                    <template v-slot:[`item.actions`]="{ item }">
+                        <v-icon small color="blue" class="mr-2" @click="editPendingHandler(item)">mdi-pencil</v-icon>
+                        <v-icon small color="red" class="mr-2" @click="deletePendingHandler(item.id_pesanan)">mdi-delete</v-icon>
+                    </template>
+                  </v-data-table>
                 </b-tab>
                 <b-tab title="Pembayaran" class="text">
 
@@ -315,6 +372,25 @@
                                                         </v-row>
                                                     </div>
                                                 </div>
+                                                <v-row>
+                                                    <v-col cols="12">
+                                                        <p style="font-size:30px; font-weight: medium;">Nomor meja</p>
+                                                    </v-col>
+                                                </v-row>
+                                                <v-row justify="center" style="margin-top:-20px">
+                                                    <v-col cols="8">
+                                                        <v-text-field
+                                                            placeholder="nomor meja jika makan di tempat"  
+                                                            v-model="formTransaksi.nomor_meja"
+                                                            outlined
+                                                            required
+                                                        >
+                                                              <template v-slot:prepend-inner>
+                                                                <v-icon style="margin-right:15px; margin-left:5px; margin-top:-3px">mdi-cards</v-icon>
+                                                            </template>
+                                                        </v-text-field>
+                                                    </v-col>
+                                                </v-row>
                                             </v-col>
                                         </v-row>
                                     </v-form>
@@ -348,6 +424,225 @@
       </v-card>
     </div>
 
+    <div v-show="!tambahPending">
+      <div class="cardinput">
+        <v-card class="m-2" style="background-color: #E5EEDA;">
+          <v-card-title
+            style="background-color: #7A9B57"
+            class="font-weight-medium mb-3 justify-center text-h4 text-center"
+          >
+            {{ titleFormPending }}
+          </v-card-title>
+          <v-card-body >
+            <v-container>
+              <v-form v-model="valid" ref="form">
+                <v-row>
+                    <v-col cols="12" md="4" sm="12">
+                        <p>Nama Customer</p>
+                        <v-select
+                            @change="getCustomerInfoPending"
+                            :loading="loadInfoC"
+                            :items="namaCustomerOptionsPending"
+                            item-text="nama_customer"
+                            item-value="id_customer"
+                            placeholder="pilih nama customer"
+                            :rules="namaCustomerRules"
+                            v-model="form.id_customer"
+                            outlined
+                            required
+                            :disabled="cekEditPending"
+                        >
+                            <template v-slot:prepend-inner>
+                                <v-icon style="margin-right:15px; margin-left:5px; margin-top:-3px">mdi-account</v-icon>
+                            </template>
+                        </v-select>
+                        
+                    </v-col>
+                    <v-col cols="12" md="4" sm="12">
+                        <p>Nama Menu</p>
+                        <v-select
+                            @change="getMenuInfoPending"
+                            :loading="loadInfoM"
+                            :items="namaMenuOptionsPending"
+                            item-text="nama_menu"
+                            item-value="id_menu"
+                            placeholder="pilih nama menu"
+                            :rules="namaMenuRules"
+                            v-model="form.id_menu"
+                            outlined
+                            required
+                            :disabled="cekEditPending"
+                        >
+                            <template v-slot:prepend-inner>
+                                <v-icon style="margin-right:15px; margin-left:5px; margin-top:-3px">mdi-food-fork-drink</v-icon>
+                            </template>
+                        </v-select>
+                    </v-col>
+                    <v-col cols="12" md="4">
+                        <p>Jumlah Pesanan</p>
+                        <v-text-field
+                        placeholder="jumlah pesanan"
+                        :rules="jumlahRules"
+                        v-model="form.jumlah_pesanan"
+                        :min="0"
+                        type="number"
+                        outlined
+                        required
+                        >
+                            <template v-slot:prepend-inner>
+                                <v-icon style="margin-right:15px; margin-left:5px; margin-top:-3px">mdi-package-up</v-icon>
+                            </template>
+                        </v-text-field>
+                    </v-col>
+                </v-row>
+                <v-row>
+                  <v-col class="col-md-4" v-show="cekInfoCustomer">
+                    <v-card style="background-color: #E5EEDA;" height="440px">
+                        <v-card-title
+                            style="background-color: #7A9B57"
+                            class=" mb-3 justify-center text-center"
+                        >
+                            Informasi Customer
+                        </v-card-title>
+                        <v-card-text style="margin-top:20px;">
+                            <v-row class="ma-1">
+                                <v-text-field
+                                    :loading="loadInfoC"
+                                    :value="customerPending.nama_customer"
+                                    label="Nama Customer"
+                                    filled
+                                    disabled
+                                ></v-text-field>
+                            </v-row>
+                            <v-row class="ma-1">
+                                <v-text-field
+                                    :loading="loadInfoC"
+                                    :value="customerPending.email_customer"
+                                    label="Email Customer"
+                                    filled
+                                    disabled
+                                ></v-text-field>
+                            </v-row>
+                            <v-row class="ma-1">
+                                <v-text-field
+                                    :loading="loadInfoC"
+                                    :value="customerPending.telepon_customer"
+                                    label="Telepon Customer"
+                                    filled
+                                    disabled
+                                ></v-text-field>
+                            </v-row>
+                            <v-row class="ma-1">
+                                <v-text-field
+                                    :loading="loadInfoC"
+                                    :value="customerPending.tanggal_lahir_customer"
+                                    label="Tanggal lahir customer"
+                                    filled
+                                    disabled
+                                ></v-text-field>
+                            </v-row>
+                        </v-card-text>
+                    </v-card>
+                  </v-col>
+                  <v-col class="col-md-8 col-sm-12" v-show="cekInfoMenu">
+                    <v-card style="background-color: #E5EEDA;" >
+                        <v-card-title
+                            style="background-color: #7A9B57"
+                            class=" mb-3 justify-center text-center"
+                        >
+                            Informasi Menu
+                        </v-card-title>
+                        <v-card-text style="margin-top:20px">
+                            <v-row class="ma-1">
+                                <v-col class="image-preview" align="center">
+                                    <img width="300px" :loading="loadInfoM" :src="imagePath"/>
+                                    <!-- <p>Image Preview</p> -->
+                                </v-col>
+                                <v-col cols="12" sm="12" md="6">
+                                    <v-text-field
+                                        :loading="loadInfoM"
+                                        :value="menuPending.nama_menu"
+                                        label="Nama Menu"
+                                        filled
+                                        disabled
+                                    ></v-text-field>
+                                    <v-text-field
+                                        :loading="loadInfoM"
+                                        prefix="Rp."
+                                        :value="formatPrice(menuPending.harga_menu)"
+                                        label="Harga Menu"
+                                        filled
+                                        disabled
+                                    ></v-text-field>
+                                    <v-textarea
+                                        :loading="loadInfoM"
+                                        rows="3"
+                                        :value="menuPending.deskripsi_menu"
+                                        label="Deskripsi Menu"
+                                        filled
+                                        disabled
+                                    ></v-textarea>
+                                </v-col>
+                            </v-row>
+                        </v-card-text>
+                    </v-card>
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col cols="12">
+                    <p>Catatan</p>
+                    <v-textarea
+                        v-model="form.catatan"
+                        placeholder="catatan pesanan"
+                        :no-resize="true"
+                        :outlined="true"
+                        :rows="3"
+                        required
+                    ></v-textarea>
+                  </v-col>
+                </v-row>
+                <v-card-actions class="justify-content-center">
+                    <v-btn
+                        class="ma-2"
+                        depressed
+                        color="error"
+                        style="padding-left: 30px; padding-right: 30px"
+                        @click="cancelPending"
+                    >
+                        Batal
+                    </v-btn>
+                    <v-btn
+                        class="ma-2"
+                        depressed
+                        color="primary"
+                        @click="setFormPending"
+                        style="padding-left: 30px; padding-right: 30px"
+                    >
+                        Simpan
+                    </v-btn>
+                </v-card-actions>
+              </v-form>
+            </v-container>
+          </v-card-body>
+        </v-card>
+      </div>
+    </div>
+
+    <v-dialog v-model="dialogConfirmPending" persistent max-width="400px">
+      <v-card style="background-color: #E5EEDA">
+        <v-card-title style="background-color: #7A9B57; margin-bottom: 20px">
+          <h4 class="text-h4 font-weight-medium mb-1">Warning!</h4>
+        </v-card-title>
+        <v-card-text>
+          Apakah anda yakin ingin menghapus data pesanan ini?</v-card-text
+        >
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="secondary" @click="dialogConfirmPending = false">Batal</v-btn>
+          <v-btn color="grey" @click="deleteDataPending">Ya</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-dialog transition="dialog-top-transition" v-model="dialogEdit" max-width="600px">
       <v-card style="background-color:#E5EEDA;">
           <v-card-title id="titleCard" class="font-weight-medium mb-3 justify-center text-h4 text-center">
@@ -649,6 +944,9 @@ export default {
       today: '',
       showStepper: false,
 
+      expanded:[],
+      singleExpand:true,
+
       snackbar: false,
       error_message: "",    
       color: "",
@@ -686,13 +984,40 @@ export default {
         { text: "Harga Menu", align: "center", value: "harga_menu" },
         { text: "Jumlah", align: "center", value: "jumlah_pesanan" },
         { text: "Sub Total", align: "center", value: "sub_total" },
-        { text: "Status Penyajian", align: "center", value: "nama_status" },
         { text: "", align: "center", value: "actions" },
+      ],
+      headersPesananPending: [
+        {
+          text: "ID Pesanan",
+          align: "center",
+          sortable: true,
+          value: "id_pesanan",
+        },
+        { text: "Nama Customer", align: "center", value: "nama_customer" },
+        { text: "Nama Pesanan", align: "center", value: "nama_menu"},
+        { text: "Jumlah Pesanan", align: "center", value: "jumlah_pesanan" },
+        { text: "Sub Total", align: "center", value: "sub_total" },
+        { text: "Catatan", align: "center", value: "catatan" },
+        { text: "", align: "center", value: "actions" },
+      ],
+
+       headersPesanan: [
+        {
+          text: "ID Pesanan",
+          align: "center",
+          sortable: true,
+          value: "id_pesanan",
+        },
+        { text: "Nama Pesanan", align: "center", value: "nama_menu"},
+        { text: "Jumlah Pesanan", align: "center", value: "jumlah_pesanan" },
+        { text: "Sub Total", align: "center", value: "sub_total" },
       ],
       
         transaksis: [],
         pesanans:[],
         pesananStruk:[],
+
+        dataPesanans:[],
 
         idPesanans:[],
     
@@ -720,6 +1045,7 @@ export default {
           total_harga:null,
           status_transaksi:null,
           metode_pembayaran:'Cash',
+          nomor_meja:null,
       },
       nama_metode:'',
 
@@ -741,6 +1067,7 @@ export default {
       jumlahEdit: 0,
       namaMenuEdit: "",
 
+
       dialogEdit: false,
       dialogContinue:false,
       dialogSave: false,
@@ -758,9 +1085,63 @@ export default {
       
       textPrinted:"",
 
+      // tambahan revisi
+      imagePath: null,
+      titleFormPending: "",
+      inputTypePending: "Tambah",
+      valid: "false",
+
+      tambahPending: true,
+      dialogConfirmPending: false,
+      dialogDeletePending: false,
+
+      cekInfoCustomer:false,
+      cekInfoMenu:false,
+      cekEditPending:false,
+
+      //  namaCustomerRules: [(v) => !!v || "Nama customer tidak boleh kosong"],
+        namaMenuRules: [(v) => !!v || "Nama menu tidak boleh kosong"],
+        // jumlahRules: [(v) => v>0 || "Jumlah pesanan tidak boleh kosong"],
+
+      pesananPending: new FormData(),
+      pesanansPending:[],
+      namaCustomerOptionsPending:[],
+      namaMenuOptionsPending:[],
+      form: {
+        id_status_pesanan:null,
+        id_transaksi: null,
+        id_menu: null,
+        id_customer: null,
+        jumlah_pesanan: null,
+        catatan:null,
+      },
+      customerPending:{
+        nama_customer: null,
+        email_customer: null,
+        telepon_customer: null,
+        tanggal_lahir_customer: null,
+      },
+      nama_customer:null,
+      menuPending: {
+        nama_menu: null,
+        harga_menu: null,
+        deskripsi_menu: null,
+        gambar_menu: null,
+      },
+
+      editIdPending: 0,
+      deleteIdPending:0,
+
+      loadInfoC: false,
+      loadInfoM: false,
+      loadInfoPesanan:false,
     };
   },
   methods: {
+    refresh(){
+      this.readData();
+      this.readPesananPending();
+    },
     getCustomerInfo(){
       
       var url = this.$api + "/customer/"+this.formInput.id_customer;
@@ -778,6 +1159,31 @@ export default {
           console.log(this.error_message);
         });
     },
+    readPesananPending(){
+      this.load = true;
+      var url = this.$api + "/pesanan-pending";
+      this.$http
+        .get(url, {
+          headers: {
+            Authorization: "Bearer " + this.token,
+          },
+        })
+        .then((response) => {
+          this.load = false;
+           if(response.data.OUT_DATA == null){
+            this.pesanansPending = [];
+          }else{
+            this.pesanansPending = response.data.OUT_DATA;
+          }
+          console.log(response.data.OUT_DATA);
+        })
+        .catch((error) => {
+          this.error_message = error.response.data.message;
+          this.color = "red";
+          this.snackbar = true;
+          this.load = false;
+        });
+    },
     readData() {
       var url = this.$api + "/transaksi";
       this.load = true;
@@ -790,7 +1196,11 @@ export default {
             }
         )
         .then((response) => {
-          this.transaksis= response.data.OUT_DATA;
+          if(response.data.OUT_DATA == null){
+            this.transaksis = [];
+          }else{
+            this.transaksis= response.data.OUT_DATA;
+          }
           this.load =false;
         })
         .catch((error) => {
@@ -798,6 +1208,31 @@ export default {
           this.color = "red";
           this.snackbar = true;
           this.load = false;
+        });
+    },
+    readDataPesanan(item,slot){
+      console.log(item.id_transaksi);
+      slot.expand(!slot.isExpanded);
+      this.loadInfoPesanan = true;
+      this.dataPesanans = [];
+       var url = this.$api + "/pesanan-transaksi/"+item.id_transaksi;
+        this.$http
+        .get(url, {
+          headers: {
+            Authorization: "Bearer " + this.token,
+          },
+        })
+        .then((response) => {
+          if(response.data.OUT_DATA == null){
+            this.dataPesanans = [];
+          }else{
+            this.dataPesanans = response.data.OUT_DATA;
+          }
+          this.loadInfoPesanan  = false;
+          console.log(response.data.OUT_DATA);
+        })
+        .catch((error) => {
+          console.log(error.response.data.message)
         });
     },
     readNamaCustomer(){
@@ -1026,6 +1461,9 @@ export default {
         this.formTransaksi.id_karyawan = localStorage.getItem('id_karyawan');
         this.formTransaksi.total_harga = this.selected.reduce((acc, item) => parseFloat(acc) + parseFloat(item.sub_total), 0);
         this.formTransaksi.status_transaksi = "Lunas";
+        if(this.formTransaksi.nomor_meja == null){
+          this.formTransaksi.nomor_meja = "-";
+        }
       if(this.$refs.formTransaksi.validate()){
           this.dialogSave = true;
       }
@@ -1043,7 +1481,8 @@ export default {
             metode_pembayaran: this.formTransaksi.metode_pembayaran,
             status_transaksi: this.formTransaksi.status_transaksi,
             device:"web",
-            list_id_pesanan: this.idPesanans
+            list_id_pesanan: this.idPesanans,
+            nomor_meja: this.formTransaksi.nomor_meja
         };
       
       this.dialogSave = false;
@@ -1064,7 +1503,7 @@ export default {
           this.load = false;
           this.e1 = 3;
           this.readData();
-          
+          this.readPesananPending();
         })
         .catch((error) => {
           this.error_message = error.response.data.message;
@@ -1156,12 +1595,256 @@ export default {
     },
     clearData(){
         this.$refs.formInput.reset();
-    }
+    },
+    setFormPending() {
+        
+      if (this.inputTypePending === "Tambah") {
+        this.savePending();
+      } else {
+        this.updatePending();
+      }
+    },
+    savePending(){
+      if (this.$refs.form.validate()) {
+        this.load = true;
+
+        this.pesananPending.append("id_menu", this.form.id_menu);
+        this.pesananPending.append("id_customer", this.form.id_customer);
+        this.pesananPending.append("jumlah_pesanan", this.form.jumlah_pesanan);
+        if(this.form.catatan != null){
+          this.pesananPending.append("catatan", this.form.catatan);
+        }
+        
+
+        var url = this.$api + "/pesanan";
+        this.$http
+          .post(url, this.pesananPending, {
+            headers: {
+              Authorization: "Bearer " + this.token,
+            },
+          })
+          .then((response) => {
+            this.error_message = response.data.OUT_MESSAGE;
+            this.color = "green";
+            this.snackbar = true;
+            this.readPesananPending();
+            this.changePagePending();
+            this.load= false;
+          })
+          .catch((error) => {
+            console.log(error.response.data.message);
+            this.error_message = "Terjadi kesalahan server";
+            this.color = "red";
+            this.snackbar = true;
+            this.load = false;
+          });
+      }
+    },
+    updatePending() {
+      if (this.$refs.form.validate()) {
+        this.load = true;
+
+        let newData;
+        if(this.form.catatan != null){
+          newData = {
+            jumlah_pesanan: this.form.jumlah_pesanan,
+            catatan: this.form.catatan,
+          };
+        }else{
+          newData = {
+            jumlah_pesanan: this.form.jumlah_pesanan,
+          };
+        }
+        
+        var url = this.$api + "/pesanan/" + this.editIdPending;
+        this.$http
+          .put(url, newData, {
+            headers: {
+              Authorization: "Bearer " + this.token,
+            },
+          })
+          .then((response) => {
+            this.error_message = response.data.OUT_MESSAGE;
+            this.color = "green";
+            this.snackbar = true;
+            this.readPesananPending();
+            this.readNamaCustomerPending();
+            this.readNamaMenuPending();
+            this.changePagePending();
+            this.resetFormPending();
+            this.load = false;
+          })
+          .catch((error) => {
+            this.error_message = error.response.data.message;
+            this.color = "red";
+            this.snackbar = true;
+            this.load = false;
+          });
+      }
+    },
+    TambahPending() {
+      this.tambahPending = false;
+      this.titleFormPending = "Tambah Pesanan";
+    },
+    editPendingHandler(item) {
+      this.menuPending = [];
+      this.customerPending = [];
+      this.inputTypePending = "Ubah";
+      this.cekEditPending= true;
+      this.editIdPending = item.id_pesanan;
+      this.form.id_customer = item.id_customer;
+      this.form.id_menu = item.id_menu;
+      this.form.jumlah_pesanan = item.jumlah_pesanan;
+      this.form.catatan = item.catatan;
+      this.dialogPending = true;
+      this.getCustomerInfoPending();
+      this.getMenuInfoPending();
+      this.tambahPending = false;
+      this.titleFormPending = "Ubah Pesanan";
+    },
+    deletePendingHandler(id) {
+      this.deleteIdPending = id;
+      this.dialogConfirmPending = true;
+    },
+    deleteDataPending() {
+      //menghapus data
+      this.dialogConfirmPending = false;
+      this.load = true;
+
+      var url = this.$api + "/pesanan/" + this.deleteIdPending;
+      //data dihapus berdasarkan id
+      this.$http
+        .delete(url, {
+          headers: {
+            Authorization: "Bearer " + this.token,
+          },
+        })
+        .then((response) => {
+          this.error_message = response.data.OUT_MESSAGE;
+          this.color = "green";
+          this.snackbar = true;
+          this.readPesananPending();
+          this.readNamaCustomerPending();
+          this.readNamaMenuPending();
+          // this.resetForm();
+          this.inputTypePending = "Tambah";
+          this.load = false;
+        })
+        .catch((error) => {
+          this.error_message = error.response.data.message;
+          this.color = "red";
+          this.snackbar = true;
+          this.load = false;
+        });
+    },
+    readNamaCustomerPending(){
+        var url = this.$api + "/customer-name";
+        this.$http
+        .get(url, {
+          headers: {
+            Authorization: "Bearer " + this.token,
+          },
+        })
+        .then((response) => {
+          this.namaCustomerOptionsPending = response.data.OUT_DATA;
+          if(this.namaCustomerOptionsPending == null){
+            this.namaCustomerOptionsPending = [];
+          }
+        })
+        .catch((error) => {
+          console.log(error.response.data.message)
+        });
+    },
+    readNamaMenuPending(){
+        var url = this.$api + "/menu-name";
+        this.$http
+        .get(url, {
+          headers: {
+            Authorization: "Bearer " + this.token,
+          },
+        })
+        .then((response) => {
+          this.namaMenuOptionsPending = response.data.OUT_DATA;
+          console.log(response.data.OUT_DATA);
+          if(this.namaMenuOptionsPending == null){
+            this.namaMenuOptionsPending = [];
+          }
+        })
+        .catch((error) => {
+          console.log(error.response.data.message)
+        });
+    },
+    getCustomerInfoPending(){
+      this.loadInfoC = true;
+      
+      var url = this.$api + "/customer/"+this.form.id_customer;
+      this.$http
+        .get(url, {
+          headers: {
+            Authorization: "Bearer " + this.token,
+          },
+        })
+        .then((response) => {
+          console.log(response.data.OUT_DATA)
+          this.customerPending = response.data.OUT_DATA[0];
+          this.loadInfoC = false;
+          this.cekInfoCustomer = true;
+        })
+        .catch((error) => {
+          this.error_message = error.response.data.message;
+          this.color = "red";
+          this.snackbar = true;
+          this.load = false;
+        });
+    },
+    getMenuInfoPending(){
+      this.loadInfoM = true;
+      
+      var url = this.$api + "/menu/"+this.form.id_menu;
+      this.$http
+        .get(url, {
+          headers: {
+            Authorization: "Bearer " + this.token,
+          },
+        })
+        .then((response) => {
+          console.log(response.data.OUT_DATA)
+          this.menuPending = response.data.OUT_DATA[0];
+          this.imagePath = this.$url + "Gambar_menu/" + this.menuPending.gambar_menu;
+          this.loadInfoM = false;
+          this.cekInfoMenu = true;
+        })
+        .catch((error) => {
+          this.error_message = error.response.data.message;
+          this.color = "red";
+          this.snackbar = true;
+          this.load = false;
+        });
+    },
+    cancelPending() {
+      this.changePagePending();
+      this.resetFormPending();
+    },
+    changePagePending() {
+      this.tambahPending = true;
+      this.titleFormPending = "";
+      this.inputTypePending = "Tambah";
+      this.cekInfoCustomer = false;
+      this.cekInfoMenu = false;
+      this.cekEditPending = false;
+      this.resetFormPending();
+    },
+    resetFormPending() {
+      this.$refs.form.reset();
+    },
   },
   mounted() {
     this.token = localStorage.getItem('token');
     this.readData();
     this.readNamaCustomer();
+    this.readPesananPending();
+    this.readNamaCustomerPending();
+    this.readNamaMenuPending();
     // this.getTanggalHariIni();
     // this.getAllNomor();
     // this.getNomorKartu();

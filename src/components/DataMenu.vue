@@ -158,8 +158,11 @@ export default {
             // }
         )
         .then((response) => {
-          this.load = false;
-          this.menus= response.data.OUT_DATA;
+          if(response.data.OUT_DATA == null){
+            this.menus = [];
+          }else{
+             this.menus = response.data.OUT_DATA;
+          }
           this.load = false;
         })
         .catch((error) => {

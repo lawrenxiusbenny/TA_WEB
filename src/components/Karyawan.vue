@@ -396,7 +396,11 @@ export default {
         })
         .then((response) => {
           this.loading = false;
-          this.karyawans = response.data.OUT_DATA;
+          if(response.data.OUT_DATA == null){
+            this.karyawans = [];
+          }else{
+             this.karyawans = response.data.OUT_DATA;
+          }
         })
         .catch((error) => {
           this.error_message = error.response.data.OUT_MESSAGE;
@@ -415,7 +419,12 @@ export default {
           },
         })
         .then((response) => {
-          this.nonaktifkaryawans = response.data.OUT_DATA;
+          if(response.data.OUT_DATA == null){
+            this.nonaktifkaryawans = [];
+          }else{
+             this.nonaktifkaryawans = response.data.OUT_DATA;
+          }
+          this.loading = false;
         })
         .catch((error) => {
           this.error_message = error.response.data.OUT_MESSAGE;

@@ -533,8 +533,11 @@ export default {
             }
         )
         .then((response) => {
-          this.load = false;
-          this.menus= response.data.OUT_DATA;
+          if(response.data.OUT_DATA == null){
+            this.menus = [];
+          }else{
+             this.menus = response.data.OUT_DATA;
+          }
           this.load = false;
         })
         .catch((error) => {
@@ -556,7 +559,11 @@ export default {
             }
         )
         .then((response) => {
-          this.makanans= response.data.OUT_DATA;
+          if(response.data.OUT_DATA == null){
+            this.makanans = [];
+          }else{
+             this.makanans = response.data.OUT_DATA;
+          }
           this.load = false;
         })
         .catch((error) => {
@@ -578,7 +585,11 @@ export default {
             }
         )
         .then((response) => {
-          this.minumans= response.data.OUT_DATA;
+          if(response.data.OUT_DATA == null){
+            this.minumans = [];
+          }else{
+             this.minumans = response.data.OUT_DATA;
+          }
           this.load = false;
         })
         .catch((error) => {
@@ -600,7 +611,11 @@ export default {
             }
         )
         .then((response) => {
-          this.lains= response.data.OUT_DATA;
+          if(response.data.OUT_DATA == null){
+            this.lains = [];
+          }else{
+             this.lains = response.data.OUT_DATA;
+          }
           this.load = false;
         })
         .catch((error) => {
