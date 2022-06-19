@@ -37,7 +37,7 @@
                       :single-expand="singleExpand"
                       item-key="id_transaksi"
                       @click:row="readDataPesanan"
-                      show-expand>
+                      >
                         <template v-slot:[`item.status_transaksi`]="{ item }">
                             <v-chip
                                 v-if="item.status_transaksi == 'Lunas'"
@@ -783,7 +783,7 @@
       </v-card>
     </v-dialog>
 
-    <div id="cetak" class="d-flex justify-content-center" style="padding-top:50vh">
+    <div id="cetak" class="" >
       <v-card class="p-3"  width="545px" outlined v-show="dialogStruk">
           <v-card-title>
               <v-row justify="center">
@@ -1371,7 +1371,7 @@ export default {
       
 
       let cetak = document.getElementById("cetak");
-      setTimeout(() => this.load = false, 5000);
+      setTimeout(() => this.load = false, 8000);
       setTimeout(() => html2PDF(cetak,{
         jsPDF: {
           format: 'a4',
@@ -1384,7 +1384,7 @@ export default {
         output : "Struk Transaksi " + item.id_transaksi+".pdf"
       }), 1000);
 
-      setTimeout(() => this.dialogStruk = false, 5000);
+      setTimeout(() => this.dialogStruk = false, 8000);
       
     },
     getPesananStruks(id){
