@@ -88,6 +88,7 @@
                 </template>
                 <template v-slot:[`item.actions`]="{ item }">
                   <v-icon
+                    v-if="item.id_status_kupon != 2"
                     small
                     color="red"
                     @click="deleteHandler2(item.id_kupon_customer)"
